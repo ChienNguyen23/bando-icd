@@ -50,6 +50,7 @@ h1{font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.02em;margin:
 .search{position:relative}
 .search input{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 38px 11px 14px;outline:none}
 .search input::placeholder{color:var(--faint)}
+.search input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;display:none}
 .search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .search button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--faint);font:inherit;font-size:18px;line-height:1;padding:6px 8px;cursor:pointer;border-radius:6px}
 .search button:hover{color:var(--ink)}
@@ -152,7 +153,7 @@ h1{font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.02em;margin:
       <p class="lede" id="lede">Chạm vào một cơ quan để xem các mã ICD-10 hay dùng ở phòng khám y học gia đình, kèm cờ BHYT: được kê 90 ngày, không được làm bệnh chính, mã cần ghép. Ô tìm tra được toàn bộ danh mục.</p>
     </div>
     <div class="search">
-      <input id="q" type="search" autocomplete="off" spellcheck="false" aria-label="Tìm mã ICD">
+      <input id="q" type="text" inputmode="search" enterkeyhint="search" role="searchbox" autocomplete="off" spellcheck="false" aria-label="Tìm mã ICD">
       <button id="clear" type="button" aria-label="Xoá ô tìm" hidden>×</button>
     </div>
   </header>
@@ -466,6 +467,7 @@ async function copy(code) {
 // ---------- khởi động ----------
 const start = (location.hash || "").slice(1);
 select(REG.has(start) ? start : "gan");
+addEventListener("hashchange", () => { const id = location.hash.slice(1); if (REG.has(id) && id !== current) select(id, true); });
 </script>
 
 </body>

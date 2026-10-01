@@ -1,5 +1,5 @@
 // Hình giải phẫu 3D: mô hình Z-Anatomy (CC BY-SA 4.0, nền BodyParts3D © DBCLS), dựng bằng _3d/zprocess.mjs.
-// 3 lớp: "noitang" (da trong suốt, xương, cơ quan) · "co" (cơ, xương) · "da" (da thật, tóc, móng; bấm vùng da).
+// 2 lớp: "noitang" (da trong suốt, xương, cơ quan) · "co" (cơ, xương).
 // Tên lưới: <lớp>_<vùng|x>__<phần>; lớp s=da, b=xương, o=cơ quan, m=cơ; vùng x = không bấm được.
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
@@ -10,7 +10,6 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 const TONE = {
   b: 0xE6DCC6, b__sun: 0xD5E2E4, b__rang: 0xF2EDE2,
   m: 0x9E3A33, m_x: 0x983730,
-  s__toc: 0x2A221E, s__mong: 0xE7C3B9,
   o_nao: 0xE2B4AB, o_nao__tn: 0xD69C94, o_nao__tt: 0xE4C2B4,
   o_mat: 0xF3F0EA, o_mat__mong: 0x6A4A2F, o_mat__giac: 0xFFFFFF, o_mat__thuy: 0xEFE9D8,
   o_tmh: 0xC9736C, o_tmh__tuyen: 0xE0B48A, o_giap: 0xA9483E,
@@ -25,7 +24,6 @@ const HIDE_IN_ORGANS = new Set(["so", "suon", "sun", "rang"]); // xương che c�
 const PINS_BY_MODE = {
   noitang: ["mat", "tmh", "giap", "vu", "sinhduc", "da", "mach", "vai", "tay", "goi", "chan", "cotsong"],
   co: ["tmh", "giap", "vu", "sinhduc", "da", "mach"],
-  da: [],
 };
 const WHITE = new THREE.Color(1, 1, 1);
 
@@ -55,25 +53,24 @@ export async function mount({ host, url, muscleUrl, pins, onPick, onHover, accen
   const accentC = new THREE.Color(accent);
   const parts = []; // {mesh, L, rid, part, pick, active}
   const glass = glassMaterial();
-  const skinReal = new THREE.MeshPhysicalMaterial({ color: 0xD6A388, roughness: 0.52, sheen: 0.6, sheenRoughness: 0.55, sheenColor: 0xffd2bd, clearcoat: 0.06 });
 
   function adopt(root) {
     const meshes = []; root.traverse(o => { if (o.isMesh) meshes.push(o); });
     for (const o of meshes) {
       const m = /^(s|b|o|m)_([a-z]+)(?:__([a-z]+))?$/.exec(o.name); if (!m) continue;
       const [, L, rid, part = ""] = m;
-      if (!(L === "s" && !part)) o.geometry.computeVertexNormals(); // da: pháp tuyến chung đã tính sẵn
-      const p = { mesh: o, L, rid, part, pick: rid !== "x" };
-      if (L === "s" && !part) { p.glass = glass; p.real = skinReal.clone(); o.material = glass; o.renderOrder = 10; }
+      if (L !== "s") o.geometry.computeVertexNormals(); // da: pháp tuyến chung đã tính sẵn
+      const p = { mesh: o, L, rid, part, pick: rid !== "x" && L !== "s" };
+      if (L === "s") { o.material = glass; o.renderOrder = 10; }
       else {
-        const bone = L === "b", hair = part === "toc";
+        const bone = L === "b";
         o.material = new THREE.MeshPhysicalMaterial({
-          color: tone(L, rid, part), roughness: hair ? 0.85 : bone ? 0.62 : L === "m" ? 0.5 : 0.42,
-          clearcoat: bone || hair ? 0 : L === "m" ? 0.2 : 0.35, clearcoatRoughness: 0.35, sheen: hair ? 0 : 0.25, sheenColor: 0xffffff,
+          color: tone(L, rid, part), roughness: bone ? 0.62 : L === "m" ? 0.5 : 0.42,
+          clearcoat: bone ? 0 : L === "m" ? 0.2 : 0.35, clearcoatRoughness: 0.35, sheen: 0.25, sheenColor: 0xffffff,
         });
         if (part === "giac" || part === "thuy") { Object.assign(o.material, { transparent: true, opacity: 0.25, roughness: 0.05, clearcoat: 1, depthWrite: false }); p.pick = false; }
       }
-      if (p.pick) { p.rim = { value: 0 }; addRim(p.real || o.material, p.rim, accentC); }
+      if (p.pick) { p.rim = { value: 0 }; addRim(o.material, p.rim, accentC); }
       o.userData.p = p; parts.push(p);
     }
   }
@@ -108,12 +105,10 @@ export async function mount({ host, url, muscleUrl, pins, onPick, onHover, accen
     for (const p of parts) {
       const { L, part, mesh } = p;
       let vis;
-      if (mode === "noitang") vis = (L === "s" && !part) || L === "o" || (L === "b" && !HIDE_IN_ORGANS.has(part));
-      else if (mode === "co") vis = L === "m" || L === "b" || (L === "o" && (p.rid === "mat" || p.rid === "sinhduc"));
-      else vis = L === "s" || (L === "o" && p.rid === "mat");
+      if (mode === "noitang") vis = L === "s" || L === "o" || (L === "b" && !HIDE_IN_ORGANS.has(part));
+      else vis = L === "m" || L === "b" || (L === "o" && (p.rid === "mat" || p.rid === "sinhduc"));
       mesh.visible = vis;
-      if (L === "s" && !part) mesh.material = mode === "da" ? p.real : p.glass;
-      p.active = vis && p.pick && (L !== "s" || mode === "da");
+      p.active = vis && p.pick;
     }
     const show = new Set(PINS_BY_MODE[mode]);
     for (const a of anchors) a.on = show.has(a.id);
@@ -153,14 +148,11 @@ export async function mount({ host, url, muscleUrl, pins, onPick, onHover, accen
     for (const p of parts) {
       if (!p.pick) continue;
       const mt = p.mesh.material, on = p.active && p.rid === selId, hot = p.active && p.rid === hoverId && !on;
-      if (p.L === "s" && mode !== "da") { p.rim.value = 0; continue; }
       const dim = focus && p.active && !on && !hot;
       mt.emissive.copy(WHITE); mt.emissiveIntensity = on ? 0.1 : hot ? 0.06 : 0;
       p.rim.value = on ? 1 : hot ? 0.55 : 0;
-      if (p.L !== "s") {
-        if (mt.transparent !== dim) { mt.transparent = dim; mt.depthWrite = !dim; mt.needsUpdate = true; }
-        mt.opacity = dim ? 0.18 : 1;
-      }
+      if (mt.transparent !== dim) { mt.transparent = dim; mt.depthWrite = !dim; mt.needsUpdate = true; }
+      mt.opacity = dim ? 0.18 : 1;
     }
     dirty = true;
   }

@@ -17,6 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<script type="importmap">{"imports":{"three":"./web3d/three.module.min.js","three/addons/":"./web3d/addons/"}}</script>
 <style>
 :root{
   --bg:#F5F6F8; --surface:#FFFFFF; --ink:#101820; --muted:#566170; --faint:#6A7482; --line:#E2E6EB;
@@ -87,6 +88,28 @@ h1{font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.02em;margin:
 .pin.on .dot{fill:var(--accent-ink)}
 .pin:focus-visible{outline:none}
 .pin:focus-visible .ring{stroke-width:3}
+.v3d{display:none}
+.figure.is3d .stage{display:none}
+.figure.is3d .v3d{display:block;position:relative;height:530px;margin:-12px -8px 0;border-radius:14px 14px 0 0;overflow:hidden}
+.c3d{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab}
+.c3d:active{cursor:grabbing}
+.v3dload{position:absolute;inset:0;display:grid;place-items:center;margin:0;color:var(--muted);font-size:13px}
+.figure.ready3d .v3dload{display:none}
+.v3dbar{display:none}
+.figure.ready3d .v3dbar{display:flex;gap:6px;justify-content:center;padding:6px 4px 0}
+.v3dbar button{font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;min-height:32px;cursor:pointer}
+.v3dbar button:hover{color:var(--ink)}
+.v3dbar button[aria-pressed="true"]{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
+.v3dbar button.busy{opacity:.6;cursor:progress}
+#v3dmode{padding-top:8px}
+#v3dbar button{font-weight:500}
+.pin3d{position:absolute;left:0;top:0;width:30px;height:30px;padding:0;border:0;background:none;cursor:pointer;transition:opacity .15s;z-index:1}
+.pin3d::before{content:"";position:absolute;left:8px;top:8px;width:14px;height:14px;box-sizing:border-box;border-radius:50%;background:var(--surface);border:2px solid var(--accent);box-shadow:0 1px 3px rgba(8,18,31,.35)}
+.pin3d::after{content:"";position:absolute;left:13px;top:13px;width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.pin3d.hot::before{background:var(--accent-soft)}
+.pin3d.on::before{background:var(--accent)}
+.pin3d.on::after{background:var(--accent-ink)}
+.pin3d:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:50%}
 .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;font-weight:500;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,calc(-100% - 10px))}
 .caption{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:12.5px;padding:8px 6px 4px;border-top:1px solid var(--line);margin-top:6px}
 .caption b{color:var(--ink);font-weight:600}
@@ -196,6 +219,7 @@ a.b{text-decoration:none}
   .grid{grid-template-columns:1fr;gap:20px}
   .figcol{position:static}
   .figure svg{max-height:420px}
+  .figure.is3d .v3d{height:450px}
   .detail{padding:4px 16px 16px}
   .steps li{grid-template-columns:1fr;gap:2px}
   .rxhead{padding:12px 12px 8px}
@@ -227,6 +251,9 @@ a.b{text-decoration:none}
     <aside class="figcol">
       <div class="figure" id="figure">
         <div class="stage" id="stage"><svg class="bg" id="bodybg" viewBox="366 45 298 668" aria-hidden="true"></svg><svg id="body" viewBox="366 45 298 668" role="group" aria-label="Hình cơ thể — chọn cơ quan"></svg></div>
+        <div class="v3d" id="v3d"><p class="v3dload" id="v3dload">Đang tải mô hình 3D…</p></div>
+        <div class="v3dbar" id="v3dmode" role="group" aria-label="Lớp giải phẫu"><button type="button" data-m="noitang" aria-pressed="true">Nội tạng</button><button type="button" data-m="co" aria-pressed="false">Cơ – xương</button><button type="button" data-m="da" aria-pressed="false">Da</button></div>
+        <div class="v3dbar" id="v3dbar" role="group" aria-label="Khung nhìn"><button type="button" data-v="full" aria-pressed="true">Toàn thân</button><button type="button" data-v="torso" aria-pressed="false">Thân mình</button><button type="button" id="v3dback" aria-label="Xoay nửa vòng, xem mặt sau hoặc mặt trước">Xoay 180°</button></div>
         <div class="tip" id="tip" hidden></div>
         <div class="caption"><span id="cap">Chạm cơ quan hoặc chấm tròn</span><span id="capn"></span></div>
       </div>
@@ -265,7 +292,7 @@ a.b{text-decoration:none}
       <p>Xét nghiệm theo dõi: theo guideline ghi ở từng dòng. Giới hạn thanh toán BHYT theo tần suất chỉ có ở HbA1c, HBV DNA và HCV RNA (Thông tư 39/2024/TT-BYT sửa Thông tư 35/2016); các xét nghiệm khác không có mốc cứng trong văn bản, giám định dựa trên chỉ định phù hợp phác đồ.</p>
       <p>Mã trong từng vùng là danh mục chọn lọc theo lâm sàng y học gia đình, chưa xếp theo tần suất khám thật.</p>
       <p>Công cụ để học và tra nhanh. Mã ghi vào hồ sơ theo phần mềm của cơ sở và hướng dẫn mã hoá của Bộ Y tế.</p>
-      <p>Hình cơ thể: “Organes du corps humain”, MothsART, Wikimedia Commons, CC0; đã tách lớp, tô màu giải phẫu và đổ khối.</p>
+      <p>Mô hình giải phẫu 3D: <a href="https://github.com/LluisV/Z-Anatomy" target="_blank" rel="noopener">Z-Anatomy</a> (CC BY-SA 4.0), xây trên <a href="https://dbarchive.biosciencedbc.jp/en/bodyparts3d/" target="_blank" rel="noopener">BodyParts3D, © The Database Center for Life Science</a>. Đã giảm lưới, gom theo vùng bệnh và tô màu; tệp mô hình đã chỉnh sửa (web3d/body.glb, web3d/muscle.glb) phát hành theo CC BY-SA 4.0. Hiển thị bằng three.js (MIT). Máy không chạy được 3D sẽ hiện hình phẳng “Organes du corps humain” (MothsART, Wikimedia Commons, CC0).</p>
     </div>
   </section>
   <footer class="credit">Nguyễn Văn Chiến — bác sĩ nội trú Y học gia đình · Cập nhật 30/09/2026</footer>
@@ -388,6 +415,55 @@ if (matchMedia("(hover:hover) and (pointer:fine)").matches && !matchMedia("(pref
   st.addEventListener("pointerleave", () => { st.classList.remove("live"); st.style.setProperty("--ry", "0deg"); st.style.setProperty("--rx", "0deg"); });
 }
 
+// ---------- hình 3D: nạp sau, máy không có WebGL hoặc lỗi nạp thì giữ hình phẳng ----------
+let fig3d = null;
+(function () {
+  const fg = $("#figure");
+  let gl = false;
+  try { const c = document.createElement("canvas"); gl = !!(c.getContext("webgl2") || c.getContext("webgl")); } catch (e) { gl = false; }
+  if (!gl || location.protocol === "file:" || !HTMLScriptElement.supports?.("importmap")) return;
+  fg.classList.add("is3d");
+  const host = $("#v3d");
+  const pins = D.regions.filter(r => r.kind === "pin").map(r => {
+    const b = el("button", "pin3d"); b.type = "button"; b.dataset.r = r.id; b.setAttribute("aria-label", r.ten); b.hidden = true;
+    b.addEventListener("click", () => select(r.id, true));
+    b.addEventListener("pointerenter", () => { hover(r.id, true); caption(r.id); showTip(r.id, b); });
+    b.addEventListener("pointerleave", () => { hover(r.id, false); caption(null); tip.hidden = true; });
+    host.appendChild(b); (nodesOf[r.id] ||= []).push(b);
+    return { id: r.id, el: b };
+  });
+  function showTip(id, at, x, y) {
+    const fb = fg.getBoundingClientRect();
+    if (at) { const b = at.getBoundingClientRect(); x = b.left + b.width / 2; y = b.top + 4; }
+    tip.textContent = REG.get(id).ten; tip.hidden = false;
+    tip.style.left = (x - fb.left) + "px"; tip.style.top = (y - fb.top) + "px";
+  }
+  const accent = () => getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#00548F";
+  import("./web3d/figure3d.js")
+    .then(m => m.mount({
+      host, url: "./web3d/body.glb", muscleUrl: "./web3d/muscle.glb", pins, accent: accent(),
+      onPick: id => select(id, true),
+      onHover: (id, x, y) => { if (id) { caption(id); showTip(id, null, x, y); } else { caption(null); tip.hidden = true; } },
+    }))
+    .then(f => {
+      fig3d = f; fg.classList.add("ready3d"); if (current) f.select(current, false); caption(null);
+      matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => f.setAccent(accent()));
+    })
+    .catch(err => { console.warn("3D:", err); fg.classList.remove("is3d"); pins.forEach(p => p.el.remove()); });
+  $("#v3dbar").querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => {
+    $("#v3dbar").querySelectorAll("[data-v]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    fig3d?.setView(b.dataset.v);
+  }));
+  $("#v3dback").addEventListener("click", () => fig3d?.rotate(Math.PI));
+  $("#v3dmode").querySelectorAll("[data-m]").forEach(b => b.addEventListener("click", async () => {
+    if (!fig3d || b.getAttribute("aria-pressed") === "true") return;
+    $("#v3dmode").querySelectorAll("[data-m]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    b.classList.add("busy");
+    try { await fig3d.setMode(b.dataset.m); if (current) fig3d.select(current); } catch (e) { console.warn("3D:", e); }
+    b.classList.remove("busy");
+  }));
+})();
+
 // ---------- chip ----------
 const chipOf = {};
 for (const r of D.regions) {
@@ -403,7 +479,7 @@ function hover(rid, on) { (nodesOf[rid] || []).forEach(n => n.classList.toggle("
 function caption(rid) {
   const r = REG.get(rid || current);
   $("#cap").innerHTML = ""; $("#capn").textContent = "";
-  if (!r) { $("#cap").textContent = "Chạm cơ quan hoặc chấm tròn"; return; }
+  if (!r) { $("#cap").textContent = fig3d ? "Kéo ngang để xoay, chạm cơ quan để chọn" : "Chạm cơ quan hoặc chấm tròn"; return; }
   $("#cap").appendChild(el("b", "", r.ten)); $("#capn").textContent = regCount(r) + " mã";
 }
 svg.addEventListener("pointerover", e => {
@@ -674,6 +750,7 @@ function select(rid, scroll) {
   svg.querySelectorAll(".hot").forEach(n => n.classList.remove("hot"));
   (nodesOf[rid] || []).forEach(n => n.classList.add("on"));
   chipOf[rid].classList.add("on");
+  fig3d?.select(rid);
   caption(null);
   if ($("#q").value) { $("#q").value = ""; $("#clear").hidden = true; }
   panel.innerHTML = "";
@@ -756,6 +833,7 @@ function search(q) {
   const codeLike = /^[a-z]\d/.test(qc);
   const olds = codeLike ? HUY.filter(([code]) => norm(code).replace(".", "").startsWith(qc)).slice(0, 12) : [];
   if (current) { (nodesOf[current] || []).forEach(n => n.classList.remove("on")); chipOf[current]?.classList.remove("on"); }
+  fig3d?.select(null);
   panel.innerHTML = "";
   const h = el("div", "phead");
   h.appendChild(el("h2", "", `Kết quả cho “${q.trim()}”`));

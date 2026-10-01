@@ -1,0 +1,6 @@
+body.glb, muscle.glb
+Chỉnh sửa (giảm lưới, gom vùng, tô màu) từ Z-Anatomy, https://github.com/LluisV/Z-Anatomy
+Z-Anatomy: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0), dựa trên BodyParts3D, (c) The Database Center for Life Science (DBCLS).
+Bản chỉnh sửa này phát hành theo cùng giấy phép CC BY-SA 4.0: https://creativecommons.org/licenses/by-sa/4.0/
+Công cụ dựng: _3d/zprocess.mjs (Bản đồ ICD phòng khám, 01/10/2026).
+three.js: MIT (xem THREE_LICENSE.txt).

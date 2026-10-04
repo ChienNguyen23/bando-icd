@@ -121,8 +121,7 @@ h1{font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.02em;margin:
 .chip.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink);border-color:transparent}
 .chipnote{margin:-6px 0 14px;color:var(--muted);font-size:12px;line-height:1.45}
 .chip.ts{font-weight:600;border-color:var(--accent);color:var(--accent)}
-.topnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.topnav button{font:inherit;font-size:14px;font-weight:600;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
-.topnav button.on,.topnav button[data-go].on{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
+
 .chip.ts.on{color:var(--accent-ink);background:var(--accent)}
 .tsctl{display:grid;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);margin:0 0 12px}
 .tsctl .lab{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 6px}
@@ -302,7 +301,54 @@ a.b{text-decoration:none}
   .phead{padding:16px}
   .group h4{padding:14px 16px 6px}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* ---- chế độ công cụ: bỏ cột hình, nội dung rộng ---- */
+body.tool .figcol{display:none}
+body.tool .grid{grid-template-columns:minmax(0,1fr)}
+.topnav{position:sticky;top:0;z-index:20;display:flex;gap:4px;margin:0 0 16px;padding:6px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border:1px solid var(--line);border-radius:14px;overflow-x:auto;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.topnav button{flex:0 0 auto;font:inherit;font-size:14px;font-weight:600;padding:9px 16px;border-radius:10px;border:0;background:transparent;color:var(--muted);cursor:pointer;transition:background .18s,color .18s}
+.topnav button:hover{color:var(--ink);background:var(--surface)}
+.topnav button.on{color:var(--accent-ink);background:var(--accent);box-shadow:0 1px 2px rgba(0,30,60,.18),0 4px 12px -6px rgba(0,84,143,.5)}
+.tswrap{padding:16px 20px 20px}
+.tdcalc .rxhead{display:block}.tdcalc .rxhead h4{font-size:17px;line-height:1.3;text-wrap:balance}.tdcalc .rxhead p{margin:4px 0 0}
+/* ---- thang điểm ---- */
+.tdsplit{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px;align-items:start}
+.tdcalc{position:sticky;top:76px}
+.tdcol .tsh{display:flex;align-items:center;gap:8px}.tsh .cnt{font-size:11px;font-weight:700;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:1px 7px}
+.tdlist{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.tdlist button{font-size:12.5px;line-height:1.3;min-height:40px;transition:border-color .15s,background .15s}
+.tdlist button:hover{border-color:var(--accent)}
+.tdform label{padding:8px 14px}.tdform{margin:0;gap:0}
+.tdres{margin:10px 14px 12px;border-radius:12px}
+.tdres b.big{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.tdres.bump b.big{animation:bump .42s cubic-bezier(.16,1,.3,1)}
+@keyframes bump{from{opacity:.35;transform:translateY(4px);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}
+.tdempty{margin:0;padding:28px 20px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);text-align:center;background:var(--surface)}
+.tdcalc .rx>.pts,.tdcalc .rx>.src{margin-inline:14px}
+/* ---- tương tác ---- */
+.ttx .pair{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center;font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.ttx .pair i{font-style:normal;color:var(--muted);font-weight:400}
+.ttx .pair:hover span{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.ttx td.num{white-space:nowrap;font-variant-numeric:tabular-nums}.ttx td.num span{color:var(--muted);font-size:12px}
+.ttx .hq{margin:0}.ttx .xt{margin:4px 0 0;color:var(--muted)}.ttx .xt b{color:var(--ink);font-weight:600}
+/* ---- bề mặt trình duyệt ---- */
+::selection{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+input,select{caret-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+table,.kpi b{font-variant-numeric:tabular-nums}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.22s;animation-timing-function:cubic-bezier(.16,1,.3,1)}
+@media (max-width:1100px){.tdsplit{grid-template-columns:1fr}.tdcalc{position:static}}
+@media (max-width:860px){
+  .topnav{margin:0 -16px 14px;border-radius:0;border-inline:0}
+  .ttx thead{display:none}.ttx,.ttx tbody,.ttx tr,.ttx td{display:block;width:100%}
+  .ttx tr{padding:10px 12px;border-top:1px solid var(--line)}.ttx td{border:0;padding:2px 0}
+  .ttx td.num{display:inline-block;width:auto;margin-right:8px}.ttx td:nth-child(3){display:inline-block;width:auto}
+  .vw-tool input,.vw-tool select{min-width:0}
+  .kpi{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tswrap{padding:12px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;animation:none!important}}
 </style>
 
 <div class="wrap">
@@ -317,7 +363,7 @@ a.b{text-decoration:none}
       <button id="clear" type="button" aria-label="Xoá ô tìm" hidden>×</button>
     </div>
   </header>
-  <nav class="topnav" aria-label="Công cụ"><button type="button" data-go="map">Bản đồ bệnh</button><button type="button" class="chip ts" data-view="tamsoat">Tầm soát</button><button type="button" class="chip ts" data-view="tiemchung">Tiêm chủng</button><button type="button" class="chip ts" data-view="thangdiem">Thang điểm nguy cơ</button><button type="button" class="chip ts" data-view="tuongtac">Tương tác thuốc</button></nav>
+  <nav class="topnav" aria-label="Công cụ"><button type="button" data-go="map">Bản đồ bệnh</button><button type="button" class="nv ts" data-view="tamsoat">Tầm soát</button><button type="button" class="nv ts" data-view="tiemchung">Tiêm chủng</button><button type="button" class="nv ts" data-view="thangdiem">Thang điểm nguy cơ</button><button type="button" class="nv ts" data-view="tuongtac">Tương tác thuốc</button></nav>
 
   <div class="grid">
     <aside class="figcol">
@@ -890,13 +936,14 @@ function plLinks(pl) {
 const panel = $("#panel");
 function select(rid, scroll) {
   const r = REG.get(rid); if (!r) return;
+  document.body.classList.remove("tool"); document.querySelectorAll(".topnav button").forEach(b => b.classList.toggle("on", b.dataset.go === "map"));
   if (current) { (nodesOf[current] || []).forEach(n => n.classList.remove("on")); chipOf[current]?.classList.remove("on"); }
   current = rid;
   tip.hidden = true;
   svg.querySelectorAll(".hot").forEach(n => n.classList.remove("hot"));
   (nodesOf[rid] || []).forEach(n => n.classList.add("on"));
   chipOf[rid].classList.add("on");
-  document.querySelectorAll(".chip.ts").forEach(b => b.classList.remove("on"));
+  document.querySelectorAll(".ts[data-view]").forEach(b => b.classList.remove("on"));
   fig3d?.select(rid);
   caption(null);
   if ($("#q").value) { $("#q").value = ""; $("#clear").hidden = true; }
@@ -937,7 +984,7 @@ function tsMatch(m, band, sex, risks) {
 function openTamSoat() {
   if (!TS) return;
   if (current) { (nodesOf[current] || []).forEach(n => n.classList.remove("on")); chipOf[current]?.classList.remove("on"); current = null; }
-  fig3d?.select(null); document.querySelectorAll(".chip.ts").forEach(b => b.classList.toggle("on", b.dataset.view === "tamsoat")); caption(null);
+  fig3d?.select(null); document.querySelectorAll(".ts[data-view]").forEach(b => b.classList.toggle("on", b.dataset.view === "tamsoat")); caption(null);
   if (location.hash !== "#tamsoat") history.replaceState(null, "", "#tamsoat");
   renderTamSoat();
 }
@@ -1045,12 +1092,14 @@ function tsCard(c, ms) {
 }
 // ---------- các trang công cụ: tương tác thuốc · thang điểm · tiêm chủng ----------
 function openView(name) {
+  document.body.classList.add("tool"); document.querySelectorAll(".topnav [data-go]").forEach(b => b.classList.remove("on"));
   if (current) { (nodesOf[current] || []).forEach(n => n.classList.remove("on")); chipOf[current]?.classList.remove("on"); current = null; }
   fig3d?.select(null); caption(null);
-  document.querySelectorAll(".chip.ts").forEach(b => b.classList.toggle("on", b.dataset.view === name));
+  document.querySelectorAll(".ts[data-view]").forEach(b => b.classList.toggle("on", b.dataset.view === name));
   if (location.hash !== "#" + name) history.replaceState(null, "", "#" + name);
-  ({ tamsoat: renderTamSoat, tuongtac: renderTuongTac, thangdiem: renderThangDiem, tiemchung: renderTiemChung })[name]?.();
-  if (matchMedia("(max-width:860px)").matches) panel.scrollIntoView({ block: "start" });
+  const go = () => ({ tamsoat: renderTamSoat, tuongtac: renderTuongTac, thangdiem: renderThangDiem, tiemchung: renderTiemChung })[name]?.();
+  if (document.startViewTransition && !matchMedia("(prefers-reduced-motion:reduce)").matches) document.startViewTransition(go); else go();
+  scrollTo({ top: 0, behavior: "auto" });
 }
 const VIEWS = { tamsoat: () => !!TS, tuongtac: () => !!D.tuongtac, thangdiem: () => !!D.thangdiem, tiemchung: () => !!D.tiemchung };
 const nd = s => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").toLowerCase();
@@ -1098,15 +1147,15 @@ function renderTuongTac() {
   t2.append(sel, cb); body.appendChild(t2);
   const rows = T.cap.filter(c => (!st.benh || (c.benh || {})[st.benh]) && (!st.chi_tt || (c.qd5948 || []).length || (c.smpc || []).some(s => s.muc !== "khong")))
     .sort((x, y) => (st.benh ? (y.benh[st.benh] - x.benh[st.benh]) : (y.n - x.n))).slice(0, 150);
-  const tb = el("table", "ttx"), th = el("thead"), tr0 = el("tr"); ["Cặp thuốc", "Số toa", "Mức", "Hậu quả, xử trí"].forEach(t => tr0.appendChild(el("th", "", t))); th.appendChild(tr0); tb.appendChild(th);
+  const tb = el("table", "ttx"), th = el("thead"), tr0 = el("tr"); ["Cặp thuốc", "Số toa", "Mức", "Hậu quả và xử trí"].forEach(t => tr0.appendChild(el("th", "", t))); th.appendChild(tr0); tb.appendChild(th);
   const tbd = el("tbody");
   for (const c of rows) { const tr = el("tr"), inf = ttInfo(c.a, c.b);
-    const a = el("a", "", `${c.a} + ${c.b}`); a.href = "#"; a.addEventListener("click", e => { e.preventDefault(); st.a = c.a; st.b = c.b; renderTuongTac(); panel.scrollIntoView({ block: "start" }); });
+    const a = el("button", "pair"); a.type = "button"; a.append(el("span", "", c.a), el("i", "", "+"), el("span", "", c.b)); a.title = "Xem chi tiết cặp này"; a.addEventListener("click", () => { st.a = c.a; st.b = c.b; renderTuongTac(); scrollTo({ top: 0 }); });
     const td0 = el("td"); td0.appendChild(a); tr.appendChild(td0);
-    tr.appendChild(el("td", "", `${st.benh ? c.benh[st.benh] : c.n} (${String(st.benh ? (100 * c.benh[st.benh] / T.n_toa).toFixed(1) : c.pct).replace(".", ",")}%)`));
+    const tdn = el("td", "num"); tdn.appendChild(el("b", "", String(st.benh ? c.benh[st.benh] : c.n))); tdn.appendChild(el("span", "", ` ${String(st.benh ? (100 * c.benh[st.benh] / T.n_toa).toFixed(1) : c.pct).replace(".", ",")}%`)); tr.appendChild(tdn);
     const top = inf.find(x => x.lv === "ccd") || inf.find(x => x.lv === "tranh") || inf.find(x => x.lv === "than") || inf[0];
     const td2 = el("td"); td2.appendChild(el("span", "lv " + (top ? LV[top.lv][0] : "khong"), top ? LV[top.lv][1] : "Chưa đối chiếu")); tr.appendChild(td2);
-    tr.appendChild(el("td", "", top ? [top.hau_qua, top.xu_tri].filter(Boolean).join(" Xử trí: ") : "")); tbd.appendChild(tr); }
+    const td3 = el("td"); if (top?.hau_qua) td3.appendChild(el("p", "hq", top.hau_qua)); if (top?.xu_tri) { const x = el("p", "xt"); x.appendChild(el("b", "", "Xử trí ")); x.appendChild(document.createTextNode(top.xu_tri)); td3.appendChild(x); } tr.appendChild(td3); tbd.appendChild(tr); }
   tb.appendChild(tbd); body.appendChild(tb);
   if (!rows.length) body.appendChild(el("p", "src", "Không có cặp phù hợp."));
   body.appendChild(el("p", "src", `Số liệu toa: ${T.nguon_toa}. Hoạt chất chưa chuẩn hoá được (biệt dược lạ, dược liệu, dụng cụ) không tính vào cặp. Tương tác chỉ đối chiếu QĐ 5948/2021 và SmPC mục 4.5 của các thuốc kê nhiều nhất; tra thêm tờ hướng dẫn sử dụng khi kê.`));
@@ -1150,11 +1199,11 @@ function renderThangDiem() {
   const TD = D.thangdiem, st = tdState;
   const body = viewHead("Thang điểm nguy cơ", "Máy tính đánh giá nguy cơ. Công thức, điểm và ngưỡng lấy nguyên văn từ bài gốc và hướng dẫn hiện hành; mỗi thang đã được kiểm bằng ví dụ trong nguồn. Kết quả hỗ trợ quyết định, không thay đánh giá lâm sàng.");
   const tool = el("div", "vw-tool"), q = el("input"); q.placeholder = "Tìm thang điểm (vd FIB-4, SCORE2, CHA2DS2…)"; q.value = st.q || ""; tool.appendChild(q); body.appendChild(tool);
-  const list = el("div"); body.appendChild(list); const box = el("div"); body.appendChild(box);
+  const split = el("div", "tdsplit"), list = el("div", "tdcol"), box = el("div", "tdcalc"); split.append(list, box); body.appendChild(split);
   const draw = () => { list.innerHTML = ""; const qq = nd(q.value);
     for (const g of TD.nhom) { const items = g.thang.filter(t => !qq || nd(t.ten + " " + t.ten_day_du + " " + t.dung_cho).includes(qq)); if (!items.length) continue;
-      list.appendChild(el("h3", "tsh", g.ten)); const w = el("div", "tdlist");
-      for (const t of items) { const b = el("button", "", t.ten); b.type = "button"; b.title = t.dung_cho || ""; b.setAttribute("aria-pressed", String(t.id === st.id)); b.addEventListener("click", () => { st.id = t.id; st.v = {}; draw(); form(); box.scrollIntoView({ block: "start" }); }); w.appendChild(b); }
+      const hh = el("h3", "tsh", g.ten); hh.appendChild(el("span", "cnt", String(items.length))); list.appendChild(hh); const w = el("div", "tdlist");
+      for (const t of items) { const b = el("button", "", t.ten); b.type = "button"; b.title = t.dung_cho || ""; b.setAttribute("aria-pressed", String(t.id === st.id)); b.addEventListener("click", () => { st.id = t.id; st.v = {}; draw(); form(); if (matchMedia("(max-width:1100px)").matches) box.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth" }); }); w.appendChild(b); }
       list.appendChild(w); } };
   q.addEventListener("input", () => { st.q = q.value; draw(); });
   const form = () => { box.innerHTML = ""; const t = TD.thang.find(x => x.id === st.id); if (!t) return;
@@ -1175,7 +1224,8 @@ function renderThangDiem() {
           if (lan) out.appendChild(el("p", "", `Theo dõi eGFR và albumin niệu: ${lan} lần mỗi năm`)); return; }
         if (r == null || !Number.isFinite(r)) { out.appendChild(el("p", "", "Nhập đủ các ô để tính.")); return; }
         const v = r, shown = t.lam_tron != null ? Number(r.toFixed(t.lam_tron)) : r;   // phân tầng theo giá trị chưa làm tròn
-        out.appendChild(el("b", "big", String(shown).replace(".", ",") + (t.don_vi_ket_qua ? " " + t.don_vi_ket_qua : "")));
+        const big = el("b", "big", String(shown).replace(".", ",") + (t.don_vi_ket_qua ? " " + t.don_vi_ket_qua : "")); out.appendChild(big);
+        if (out.dataset.last !== String(shown)) { out.dataset.last = String(shown); out.classList.remove("bump"); void out.offsetWidth; out.classList.add("bump"); }
         const strata = tdStrata(t, st.v), pt = strata.find(p => (p.tu == null || v >= p.tu) && (p.den == null || (strata.some(q => q.tu === p.den) ? v < p.den : v <= p.den)));
         if (pt) { out.appendChild(el("p", "", pt.nhan)); if (pt.hanh_dong) out.appendChild(el("p", "", pt.hanh_dong)); }
         const o = tdVals(t, st.v); for (const c of t.canh_bao || []) if (tdExpr(c.dieu_kien, o)) { const w = el("p", "cb " + (c.muc || "")); w.appendChild(el("b", "", c.muc === "khan" ? "Cảnh báo: " : "Lưu ý: ")); w.appendChild(document.createTextNode(c.hanh_dong)); out.appendChild(w); } };
@@ -1184,6 +1234,7 @@ function renderThangDiem() {
     if (t.ban_quyen) sec.appendChild(el("p", "src", t.ban_quyen));
     sec.appendChild(srcDet(t.nguon)); box.appendChild(sec); };
   draw(); form();
+  if (!st.id) box.appendChild(el("p", "tdempty", "Chọn một thang ở danh sách để bắt đầu tính. Gõ tên thang vào ô tìm để lọc nhanh."));
 }
 
 // ===== Tiêm chủng người lớn =====
@@ -1222,8 +1273,8 @@ function renderTiemChung() {
 }
 
 if (Object.values(VIEWS).some(f => f())) $("#ts-box").hidden = false;
-$(".topnav [data-go=map]").addEventListener("click", () => { select(current || "gan"); document.querySelectorAll(".chip.ts").forEach(b => b.classList.remove("on")); });
-document.querySelectorAll(".chip.ts").forEach(b => { if (!VIEWS[b.dataset.view]?.()) b.hidden = true; else b.addEventListener("click", () => openView(b.dataset.view)); });
+$(".topnav [data-go=map]").addEventListener("click", () => { select(current || "gan"); document.querySelectorAll(".ts[data-view]").forEach(b => b.classList.remove("on")); });
+document.querySelectorAll(".ts[data-view]").forEach(b => { if (!VIEWS[b.dataset.view]?.()) b.hidden = true; else b.addEventListener("click", () => openView(b.dataset.view)); });
 if (D.tuongtac) { D.tuongtac.idx = {}; for (const c of D.tuongtac.cap) D.tuongtac.idx[[c.a, c.b].sort().join("|")] = c; }
 $("#info-open").addEventListener("click", () => { const d = $("#huongdan"); d.open = true; d.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth" }); });
 
@@ -1298,7 +1349,7 @@ function search(q) {
   const codeLike = /^[a-z]\d/.test(qc);
   const olds = codeLike ? HUY.filter(([code]) => norm(code).replace(".", "").startsWith(qc)).slice(0, 12) : [];
   if (current) { (nodesOf[current] || []).forEach(n => n.classList.remove("on")); chipOf[current]?.classList.remove("on"); }
-  fig3d?.select(null); document.querySelectorAll(".chip.ts").forEach(b => b.classList.remove("on"));
+  fig3d?.select(null); document.querySelectorAll(".ts[data-view]").forEach(b => b.classList.remove("on"));
   panel.innerHTML = "";
   const h = el("div", "phead");
   h.appendChild(el("h2", "", `Kết quả cho “${q.trim()}”`));

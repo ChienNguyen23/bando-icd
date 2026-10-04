@@ -154,7 +154,7 @@ h1{font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.02em;margin:
 .ttx th,.ttx td{padding:7px 8px;border-top:1px solid var(--line);text-align:left;vertical-align:top}
 .ttx thead th{border-top:0;font-size:12px;color:var(--muted);font-weight:600}
 .lv{display:inline-block;font-size:12px;font-weight:700;border-radius:5px;padding:2px 7px;white-space:nowrap}
-.lv.ccd{color:#fff;background:#b42318}.lv.tranh{color:#7a2e0e;background:#fde7d9}.lv.than{color:var(--warn-ink);background:var(--warn-bg)}.lv.khong{color:var(--muted);background:var(--bg)}
+.lv.ccd{color:#fff;background:#b42318}.lv.tranh{color:#7a2e0e;background:#fde7d9}.lv.than{color:var(--warn-ink);background:var(--warn-bg)}.lv.khong{color:var(--muted);background:var(--bg)}.lv.cong{color:var(--accent);background:var(--accent-soft)}
 .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:0 0 14px}.kpi div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px}.kpi b{display:block;font-size:20px}.kpi span{font-size:12px;color:var(--muted)}
 .tdlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:6px;margin:0 0 14px}
 .tdlist button{font:inherit;font-size:13px;text-align:left;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);cursor:pointer}.tdlist button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
@@ -1244,7 +1244,7 @@ const srcList = (arr) => { const ol = el("ol", "tl"); (arr || []).forEach(x => {
 const srcDet = (arr, title) => { const d = el("details", "tsrc"); d.appendChild(el("summary", "", `${title || "Nguồn"} (${(arr || []).length})`)); d.appendChild(srcList(arr)); return d; };
 
 // ===== Tương tác thuốc =====
-const LV = { ccd: ["ccd", "Chống chỉ định"], tranh: ["tranh", "Tránh phối hợp"], than: ["than", "Thận trọng, theo dõi"], khong: ["khong", "Nguồn không ghi"] };
+const LV = { ccd: ["ccd", "Chống chỉ định"], tranh: ["tranh", "Tránh phối hợp"], than: ["than", "Thận trọng, theo dõi"], cong: ["cong", "Cộng tác dụng, lưu ý"], khong: ["khong", "Nguồn không ghi"] };
 const ttState = { ds: [], benh: "", chi_tt: true };
 const kh = x => nd(x).replace(/ph/g, "f").replace(/th/g, "t").replace(/y/g, "i").replace(/k/g, "c").replace(/[^a-z0-9]/g, "").replace(/e$/, "");
 function ttInfo(a, b) {   // mọi ghi nhận cho cặp: QĐ 5948 (mọi cặp) + SmPC 4.5 + nhóm QĐ 5948 phần 2
@@ -1294,9 +1294,9 @@ function renderTuongTac() {
   sel.addEventListener("change", () => { st.benh = sel.value; renderTuongTac(); }); ck.addEventListener("change", () => { st.chi_tt = ck.checked; renderTuongTac(); });
   t2.append(sel, cb); body.appendChild(t2);
   const lvl = el("div", "seg ttlvl"); st.lv ??= ""; st.lim ??= 20;
-  [["", "Mọi mức"], ["ccd", "Chống chỉ định"], ["tranh", "Tránh phối hợp"], ["than", "Thận trọng"]].forEach(([v, t]) => { const b = el("button", "", t); b.type = "button"; b.setAttribute("aria-pressed", String(st.lv === v)); b.addEventListener("click", () => { st.lv = v; st.lim = 20; renderTuongTac(); }); lvl.appendChild(b); });
+  [["", "Mọi mức"], ["ccd", "Chống chỉ định"], ["tranh", "Tránh phối hợp"], ["than", "Thận trọng"], ["cong", "Cộng tác dụng"]].forEach(([v, t]) => { const b = el("button", "", t); b.type = "button"; b.setAttribute("aria-pressed", String(st.lv === v)); b.addEventListener("click", () => { st.lv = v; st.lim = 20; renderTuongTac(); }); lvl.appendChild(b); });
   body.appendChild(lvl);
-  const topLv = c => { const inf = ttInfo(c.a, c.b); return (inf.find(x => x.lv === "ccd") || inf.find(x => x.lv === "tranh") || inf.find(x => x.lv === "than") || {}).lv || ""; };
+  const topLv = c => { const inf = ttInfo(c.a, c.b); return (inf.find(x => x.lv === "ccd") || inf.find(x => x.lv === "tranh") || inf.find(x => x.lv === "than") || inf.find(x => x.lv === "cong") || {}).lv || ""; };
   const all = T.cap.filter(c => (!st.benh || (c.benh || {})[st.benh]) && (!st.chi_tt || (c.qd5948 || []).length || (c.smpc || []).some(s => s.muc !== "khong")) && (!st.lv || topLv(c) === st.lv))
     .sort((x, y) => (st.benh ? (y.benh[st.benh] - x.benh[st.benh]) : (y.n - x.n)));
   const rows = all.slice(0, st.lim);

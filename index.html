@@ -341,7 +341,7 @@ body.tool .grid{grid-template-columns:minmax(0,1fr)}
 .vxorg .o{display:inline-block;min-width:18px;text-align:center;font-size:10.5px;font-weight:700;border-radius:4px;padding:2px 3px;color:var(--accent);background:var(--accent-soft)}
 .vxone{grid-column:1/-1;color:var(--muted);font-size:13px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .vx[open] .vxone{display:none}
-.vxbody{border:0;border-top:1px solid var(--line);border-radius:0;margin:0;padding:0 16px 8px}.vxbody .tstt{margin:12px 0 4px}.vxall{white-space:nowrap}
+.vxbody{border:0;border-top:1px solid var(--line);border-radius:0;margin:0;padding:0 16px 8px}.vxbody .tstt{margin:12px 0 4px}.vxbody>.rxhead h4{display:none}.vxbody>.rxhead{padding:10px 0 0}.vxall{white-space:nowrap}
 /* ---- tương tác ---- */
 .ttchips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}.ttchip{font:inherit;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--ink);cursor:pointer}.ttchip.clr{border-color:var(--line);background:none;color:var(--muted)}
 .ttcard{border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 8px;background:var(--surface)}.ttcard>b{display:block;font-size:14px;margin:0 0 2px}.ttcard .hq,.ttcard .xt{margin:2px 0 0}.ttcard .xt{color:var(--muted)}
@@ -986,7 +986,7 @@ const TS_BANDS = [[18, 29], [30, 39], [40, 49], [50, 64], [65, 74], [75, 200]];
 const TS_RISK = [["hut_thuoc", "Hút thuốc lá"], ["thua_can", "Thừa cân, béo phì"], ["dtd", "Đái tháo đường"], ["tha", "Tăng huyết áp"], ["tim_mach", "Bệnh tim mạch"],
   ["hbv", "Nhiễm viêm gan B"], ["xo_gan", "Xơ gan"], ["hiv", "Nhiễm HIV"], ["qhtd", "Hành vi tình dục nguy cơ"], ["tiem_chich", "Tiêm chích ma tuý"],
   ["tsgd_ung_thu", "Gia đình có người ung thư"], ["tiep_xuc_lao", "Tiếp xúc người bệnh lao"], ["sau_man_kinh", "Đã mãn kinh"], ["khac", "Nhóm nguy cơ khác (ghi trong từng dòng)"]];
-const tsState = { band: 2, sex: "nam", risks: new Set() };
+const tsState = { band: 2, sex: "nam", risks: new Set(), open: new Set() };
 const bandTxt = ([a, b]) => b >= 200 ? `≥${a}` : `${a}–${b}`;
 const orgCls = m => m.vung === "VN" ? "org vn" : m.vung === "Mỹ" ? "org my" : m.vung === "Châu Âu" ? "org eu" : "org";
 const orgTxt = m => m.vung === "Mỹ" ? `Mỹ · ${m.to_chuc}${m.muc_do && m.to_chuc === "USPSTF" ? " " + m.muc_do : ""}` : m.to_chuc;
@@ -1030,11 +1030,11 @@ function renderTamSoat() {
   th.appendChild(tr0); tb.appendChild(th); const tbd = el("tbody");
   for (const c of topics) {
     const tr = el("tr"), r = el("th"); r.scope = "row"; const a = el("a", "", c.ten); a.href = "#ts-" + c.id;
-    a.addEventListener("click", e => { e.preventDefault(); const t = $("#ts-" + c.id); if (t) t.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth" }); else { const k = TS_BANDS.findIndex((_, i) => c.muc.some(m => tsMatch(m, i, st.sex, st.risks))); if (k >= 0) { st.band = k; renderTamSoat(); $("#ts-" + c.id)?.scrollIntoView({ block: "start" }); } } });
+    a.addEventListener("click", e => { e.preventDefault(); st.open.add(c.id); const t0 = $("#ts-" + c.id); if (t0) t0.open = true; const t = $("#ts-" + c.id); if (t) t.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth" }); else { const k = TS_BANDS.findIndex((_, i) => c.muc.some(m => tsMatch(m, i, st.sex, st.risks))); if (k >= 0) { st.band = k; renderTamSoat(); $("#ts-" + c.id)?.scrollIntoView({ block: "start" }); } } });
     r.appendChild(a); tr.appendChild(r);
     TS_BANDS.forEach((_, i) => { const td = el("td", i === st.band ? "cur" : ""); const orgs = [...new Set(c.muc.filter(m => !tsNeg(m) && tsMatch(m, i, st.sex, st.risks)).map(m => m.vung))];
       for (const v of ["VN", "Châu Âu", "Toàn cầu", "Mỹ"]) if (orgs.includes(v)) { const o = el("span", "o", v === "VN" ? "B" : v === "Mỹ" ? "M" : v === "Châu Âu" ? "E" : "W"); o.title = v === "VN" ? "Bộ Y tế" : v === "Mỹ" ? "Mỹ (CDC, USPSTF)" : v === "Châu Âu" ? "Châu Âu" : "WHO"; td.appendChild(o); }
-      if (orgs.length) { td.classList.add("hit"); td.title = "Bấm để xem cách làm và khoảng cách"; td.addEventListener("click", () => { st.band = i; renderTamSoat(); $("#ts-" + c.id)?.scrollIntoView({ block: "start" }); }); }
+      if (orgs.length) { td.classList.add("hit"); td.title = "Bấm để xem cách làm và khoảng cách"; td.addEventListener("click", () => { st.band = i; st.open.add(c.id); renderTamSoat(); $("#ts-" + c.id)?.scrollIntoView({ block: "start" }); }); }
       tr.appendChild(td); });
     tbd.appendChild(tr);
   }
@@ -1049,10 +1049,20 @@ function renderTamSoat() {
   for (const [title, f] of groups) {
     const items = here.filter(f); if (!items.length) continue;
     body.appendChild(el("h3", "tsh", `${title} (${bandTxt(TS_BANDS[st.band])} tuổi, ${st.sex === "nu" ? "nữ" : "nam"})`));
-    for (const { c, ms } of items) body.appendChild(tsCard(c, ms));
+    const lst = el("div", "vxlist"); body.appendChild(lst);
+    for (const { c, ms } of items) lst.appendChild(tsItem(c, ms));
   }
   if (!here.length) body.appendChild(el("p", "src", "Không có khuyến cáo tầm soát cho lựa chọn này."));
   body.appendChild(el("p", "src", "Tầm soát áp dụng cho người không triệu chứng. Có triệu chứng hoặc đã có bệnh thì khám và theo dõi theo thẻ bệnh. Quyết định cuối cùng theo đánh giá của bác sĩ và hướng dẫn chuyên môn của cơ sở."));
+}
+function tsItem(c, ms) {   // danh sách gọn: bấm tên mới mở chi tiết
+  const st = tsState, det = el("details", "vx"); det.id = "ts-" + c.id; det.open = st.open.has(c.id);
+  det.addEventListener("toggle", () => det.open ? st.open.add(c.id) : st.open.delete(c.id));
+  const sm = el("summary"); sm.appendChild(el("b", "", c.ten)); const og = el("span", "vxorg");
+  const order = { VN: 0, "Châu Âu": 1, "Toàn cầu": 2, "Mỹ": 3 };
+  [...new Set(ms.filter(m => !tsNeg(m)).map(m => m.vung))].sort((a, b) => order[a] - order[b]).forEach(v => { const o = el("span", "o", v === "VN" ? "B" : v === "Mỹ" ? "M" : v === "Châu Âu" ? "E" : "W"); og.appendChild(o); });
+  sm.appendChild(og); const t1 = TS.tomtat?.[c.id]?.y?.[0]; if (t1) sm.appendChild(el("span", "vxone", t1)); det.appendChild(sm);
+  const card = tsCard(c, ms); card.removeAttribute("id"); card.classList.add("vxbody"); det.appendChild(card); return det;
 }
 function tsCard(c, ms) {
   const box = el("section", "rx"); box.id = "ts-" + c.id;

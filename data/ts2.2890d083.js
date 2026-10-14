@@ -617,11 +617,13 @@ const tnHd = h => Array.isArray(h) ? h.length > 0 : !!h;
 function ktqVanDe(R) {
   const C = D.khamtq, vd = [], viec = [[], [], []];
   for (const k of C.khoi) for (const id of k.thang) {
-    const Rt = R.thang[id], K = Rt?.K; if (!K || K.r == null || Rt.khong_ap_dung) continue;
-    const t = D.thangdiem.thang.find(x => x.id === id), ten = C.thang[id].ten_ngan;
+    const Rt = R.thang[id], K = Rt?.K, ten = C.thang[id].ten_ngan;
+    if (Rt?.khong_ap_dung) { for (const c of Rt.canh_bao_ngoai || []) if (c.muc === "khan") { vd.push({ d: 100, chu: `${ten}: ${c.chu.split(". ")[0]}`, cc: c.nguon }); viec[0].push({ chu: `${ten}: ${c.chu}`, cc: c.nguon, ut: 3 }); } continue; }
+    if (!K || K.r == null) continue;
+    const t = D.thangdiem.thang.find(x => x.id === id);
     for (const c of K.cb || []) if (c.muc === "khan") { vd.push({ d: 100, chu: `${ten}: ${c.hanh_dong.split(". ")[0]}`, cc: t.nguon }); viec[0].push({ chu: `${ten}: ${c.hanh_dong}`, cc: t.nguon, ut: 3 }); }
     const S = tdStrata(t, Rt.v).filter(p => !/^Chưa/.test(p.nhan || "")), i = S.indexOf(K.pt);
-    if (i > 0 && tnHd(K.pt.hanh_dong)) { vd.push({ d: 50 + 40 * i / Math.max(1, S.length - 1), chu: `${ten}: ${[K.bang ? K.ma : t.an_so ? "" : K.chu, K.pt.nhan].filter(Boolean).join(", ")}`, cc: t.nguon });
+    if (i > 0 && tnHd(K.pt.hanh_dong)) { vd.push({ d: 50 + 40 * i / Math.max(1, S.length - 1), chu: `${ten}: ${[K.bang ? K.ma : t.an_so ? "" : K.chu, tdMucPl(K)].filter(Boolean).join(", ")}`, cc: t.nguon });
       for (const l of [].concat(K.pt.hanh_dong)) if (l) viec[tnMoc(l)].push({ chu: `${ten}: ${l}`, cc: t.nguon, ut: 2 }); }
   }
   return { vd, viec };
